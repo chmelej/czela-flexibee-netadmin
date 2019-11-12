@@ -1,0 +1,12 @@
+# PROD flexibee x DEV netadmin
+# Czela Netadmin
+jdbc.driver = org.mariadb.jdbc.Driver
+jdbc.url = jdbc:mariadb://<host>:3306/<db1_name?useUnicode=true&characterEncoding=UTF-8&serverTimezone=CET
+jdbc.username = <db1_user>
+jdbc.password = <db1_pass>
+jdbc.type = mysql
+# Abra Flexibee
+flexibee.server = https://<db2_host>:5434
+flexibee.company = <db2_name>
+flexibee.user = <db2_user>
+flexibee.password = <db2_pass>
