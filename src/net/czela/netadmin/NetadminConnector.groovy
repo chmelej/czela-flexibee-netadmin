@@ -48,6 +48,12 @@ class NetadminConnector {
     }
 
     def updateDoklad(Doklad dok) {
+        if (dok.akce == null) { dok.akce = 0 }
+        if (dok.dodavatel == null) { dok.dodavatel = '-' }
+        if (dok.ucet == null) { dok.ucet = '-' }
+        if (dok.vs == null) { dok.vs = '-' }
+        if (dok.komu == null) { dok.komu = 0 }
+
         if (dok.id != null) {
             String updateColumns = dokladyColumns.grep({ it != 'id' }).collect({ "$it = ?" }).join(', ')
             sql.executeUpdate("UPDATE doklady SET ${updateColumns} where id = ?", [
@@ -74,7 +80,7 @@ class NetadminConnector {
                 dok.cena, dok.komu, dok.stav, dok.obsah, dok.poznamka, dok.doctype, dok.id,])
     }
 
-    def storeDokladOnFS(String name, byte[] data) {
+    def storeDokladOnFS(String name, byte[] data, boolean forceOverwrite = false) {
 
         def m = name =~ /^PF(\d+).20(\d+)$/
         if (m.matches()) {
@@ -95,18 +101,13 @@ class NetadminConnector {
             if (! dir.exists()) dir.mkdir()
         }
         File file = new File(dir, "${name}.pdf".toString());
-        if (file.exists()) { file.delete() }
-        file << data
-    }
 
-    /*
-        // rozpisy
-        dok.rozpisy.each { rozpis ->
-            rozpis.dokladId = dok.id
-            saveRozpis(rozpis);
+        if (file.exists() && forceOverwrite) { file.delete() }
+
+        if (!file.exists()) {
+            file << data
         }
     }
-     */
 
     List<Doklad> selectDokladyByIds(List<String> ids) {
         def subsets = ids.collate( ids.size().intdiv( 500 ) )

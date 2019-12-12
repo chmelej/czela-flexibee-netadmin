@@ -117,6 +117,35 @@ class FlexibeeConnector {
         return json
     }
 
+    def putJson(String evidence, def map) {
+        def link = "${host}/c/${company}/${evidence}.json"
+        String data = JsonOutput.toJson([ "winstrom": ["$evidence": map ] ])
+        URL apiUrl = new URL(link)
+
+        println data
+        HttpsURLConnection connection = (HttpsURLConnection) apiUrl.openConnection()
+        connection.setHostnameVerifier(new AnyHostVerifier())
+        connection.setRequestMethod("PUT")
+        connection.setRequestProperty("Authorization", "Basic " + encodedAuth)
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setAllowUserInteraction(false)
+        connection.setDoOutput(true)
+        connection.setDoInput(true)
+        OutputStream os = connection.getOutputStream()
+        os.write(data.bytes)
+        os.flush()
+        os.close()
+        connection.connect()
+        Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))
+
+
+
+        // read the output from the server
+        def json = new JsonSlurper().parse(reader)
+        return json
+    }
+
     List listPrijateFaktury() {
         def params = [
                 'detail=custom:lastUpdate,kod,stavUhrK,datSplat,sumCelkem,varSym,firma,popis,primUcet,protiUcet,stredisko,zakazka,typDoklBan,pocetPriloh,bezPolozek,banSpojDod',
@@ -132,7 +161,7 @@ class FlexibeeConnector {
 
     Map listPrijateFakturyPolozky() {
         def params = [
-                'detail=custom:doklFak,lastUpdate,nazev,cenaMj,dphDalUcet,dphMdUcet,mnozMj,objem,stredisko',
+                'detail=custom:doklFak,lastUpdate,nazev,cenaMj,dphDalUcet,dphMdUcet,mnozMj,objem,stredisko,nazev',
                 'limit=10000',
         ]
         def json = getJson(EVIDENCE_FAKTURA_PRIJATA_POLOZKA, null, params)
@@ -223,6 +252,7 @@ class FlexibeeConnector {
         def map = [
                 "typDokl": "code:FAKTURA",
                 "popis": "$jmeno $prijmeni - předpis členského příspěvku za $rok/${fmtMonth(mesic)}",
+                "datVyst":	"${rok}-${fmtMonth(mesic)}-01+01:00",
                 "datSplat": "${nextrok}-${fmtMonth(nextmesic)}-15+01:00",
                 "nazFirmy": "$jmeno $prijmeni",
                 "ulice": coalesce(adresa,'-'),
@@ -234,6 +264,8 @@ class FlexibeeConnector {
                 "varSym": "$vs",
                 "sumOsv": "$cena",
                 "sumCelkem": "$cena",
+                "typUcOp": 'code:CLENSKE_PRISPEVKY',
+                "primUcet":	"code:315000",
         ]
         def json = postJson(EVIDENCE_FAKTURA_VYDANA, map)
         /**

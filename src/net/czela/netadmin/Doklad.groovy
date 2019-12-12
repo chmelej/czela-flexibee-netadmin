@@ -36,4 +36,28 @@ class Doklad {
                 ", doctype=" + doctype +
                 '}'
     }
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        Doklad doklad = (Doklad) o
+
+        if (akce != doklad.akce) return false
+        if (cena != doklad.cena) return false
+        if (datum != doklad.datum) return false
+        if (datumSplatnosti != doklad.datumSplatnosti) return false
+        if (doctype != doklad.doctype) return false
+        if (dodavatel != doklad.dodavatel) return false
+        if (id != doklad.id) return false
+        if (komu != doklad.komu) return false
+        if (obsah != doklad.obsah) return false
+        if (poznamka != doklad.poznamka) return false
+        if (rozpisy != doklad.rozpisy) return false
+        if (stav != doklad.stav) return false
+        if (ucet != doklad.ucet) return false
+        if (vs != doklad.vs) return false
+
+        return true
+    }
 }

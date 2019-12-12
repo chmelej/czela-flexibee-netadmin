@@ -18,9 +18,7 @@ import static net.czela.netadmin.NetadminConnector.DOK_STAV_PROPLACENY
 import static net.czela.netadmin.NetadminConnector.DOK_UCTENKA
 import static net.czela.netadmin.NetadminConnector.DOK_UNKNOWN
 
-
-
-Sql sql = Helper.newSqlInstance("app.properties", this)
+Sql sql = Helper.newSqlInstance("app-test.properties", this)
 
 def fbc = new FlexibeeConnector()
 fbc.initClient(Helper.get("flexibee.server"), Helper.get("flexibee.company"), Helper.get("flexibee.user"), Helper.get("flexibee.password"))
@@ -38,6 +36,7 @@ def ids = faktury.collect({it['kod']})
 def doklady = nac.selectDokladyByIds(ids)
 def rozpisy = nac.selectRozpisyByDokladyIds(ids)
 
+// k dokladum pridam rozpisy a naplnim mapu
 def dokladyMap = [:]
 doklady.each { dok ->
     def r = rozpisy?.get(dok.id)
@@ -47,6 +46,19 @@ doklady.each { dok ->
     dokladyMap.put(dok.id, dok)
 }
 
+
+/*
+  - kontrola ze priloha je ulozena na disku
+  - pokud soucet polozek se rovna fakture, tak importujeme polozky, jinakvytvorim jednupolozku na zaklade faktury
+  - pokud doklad neexistuje vytvorim v netadmin
+  - pokud existuje tak zalezi na stavu
+    a) stav - novy, schvaleny k proplaceni, propaceny, AF menipouze novy a proplaceny jinak nechava jak je
+    b) castka, nazev,
+    c) sekce, akce (ty se vyplnuji jen z netadmina do AF (pokud je ve stavu ceka na proplaceni)??? nebo vzdy
+    d) prilohaje na disku
+    e) rozpisy
+
+ */
 faktury.each() { faktura ->
     def kodFak = faktura[FlexibeeConnector.KOD]
     def polozkyFaktury = polozky.get(kodFak)
@@ -68,7 +80,21 @@ faktury.each() { faktura ->
         totalCena = totalCena.setScale(2, RoundingMode.HALF_UP)
         if (totalCena.compareTo(sumCelkem) != 0) {
             println("WARN: Prijata faktura $kodFak celkova suma $sumCelkem neodpovida sume jednotlivých položek $totalCena")
+            polozkyFaktury = null
         }
+    }
+
+    if (listEmpty(polozkyFaktury)) {
+        // pridam jednu polozku ktera souhlasi s fakturou
+        polozkyFaktury = []
+        polozkyFaktury.add([
+                'cenaMj': faktura['sumCelkem'],
+                'mnozMj': 1,
+                'nazev': faktura['popis'],
+                //"doklFak": "code:PF0004/2019",
+                //"lastUpdate":  "2019-11-27T20:33:44.295+01:00",
+                //"stredisko": "code:SEKCE:14",
+        ])
     }
 
     if (listNotEmpty(prilohyFaktury)) {
@@ -81,7 +107,6 @@ faktury.each() { faktura ->
             println("WARN: Prijata faktura $kodFak v prilohach jsem nenasel naskenovany doklad!($pdf/${prilohyFaktury.size()})")
         } else {
             // vim ze je prave jeden doklad
-            /*
             prilohyFaktury.each { priloha ->
                 if (priloha['contentType'] == 'application/pdf') {
                     byte[] blob = fbc.getPriloha(priloha['id'])
@@ -91,7 +116,6 @@ faktury.each() { faktura ->
                         println("WARN: Prijata faktura $kodFak naskenovany doklad je mensi nez 1000 znaku!)")
                 }
             }
-            */
         }
     } else {
         println("WARN: Prijata faktura $kodFak neobsahuje prilohu s naskenovanym dokladem!")
@@ -104,10 +128,27 @@ faktury.each() { faktura ->
     try {
         if (netadminDoklad == null) {
             nac.insertDoklad(dok)
-//    } else if (notEquals(dok, netadminDoklad)) {
-//        nac.updateDoklad(dok, netadminDoklad)
-        //} else {
-        //    println("Doklad $dok.id je v pořádku a můžeme ho přeskočit.")
+        } else {
+            if (! netadminDoklad.equals(dok)) {
+                nac.updateDoklad(dok)
+            } else {
+                println("Doklad $dok.id je v pořádku a můžeme ho přeskočit.")
+            }
+/*
+            def changeFaktura = [:]
+            if (netadminDoklad.getAkce() != dok.getAkce()) {
+                changeFaktura.put[:]
+            }
+            if (netadminDoklad.getAkce() != dok.getAkce()) {
+                changeFaktura.put[:]
+            }
+
+            if (changeFaktura.size() > 0) {
+                changeFaktura.put('kof')
+                fbc.postPrijateFaktury(changeFaktura)
+            }
+
+ */
         }
     } catch(Exception e) {
         println(dok)
@@ -157,4 +198,8 @@ Doklad convertFaktura2Doklad(def faktura, def polozky, def prilohy) {
 
 def listNotEmpty(List l) {
     return  l != null && l.size() > 0
+}
+
+def listEmpty(List l) {
+    return  l == null || l.size() == 0
 }
