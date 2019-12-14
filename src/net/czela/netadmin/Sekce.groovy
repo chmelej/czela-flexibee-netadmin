@@ -2,7 +2,7 @@ package net.czela.netadmin
 
 class Sekce {
     static final String[] columns = 'id,nazev,group'.split(',')
-    static final String tableName = 'akce'
+    static final String tableName = 'sekce'
     static final String pkName = 'id'
 
     Long id

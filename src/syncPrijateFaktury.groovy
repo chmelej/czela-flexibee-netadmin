@@ -18,7 +18,7 @@ import static net.czela.netadmin.NetadminConnector.DOK_STAV_PROPLACENY
 import static net.czela.netadmin.NetadminConnector.DOK_UCTENKA
 import static net.czela.netadmin.NetadminConnector.DOK_UNKNOWN
 
-Sql sql = Helper.newSqlInstance("app-test.properties", this)
+Sql sql = Helper.newSqlInstance("app.properties", this)
 
 def fbc = new FlexibeeConnector()
 fbc.initClient(Helper.get("flexibee.server"), Helper.get("flexibee.company"), Helper.get("flexibee.user"), Helper.get("flexibee.password"))

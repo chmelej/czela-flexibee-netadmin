@@ -5,7 +5,7 @@ import net.czela.netadmin.Akce
 import net.czela.netadmin.NetadminConnector
 import net.czela.netadmin.Sekce
 
-Sql sql = Helper.newSqlInstance("app-test.properties", this)
+Sql sql = Helper.newSqlInstance("app.properties", this)
 
 def fbc = new FlexibeeConnector()
 fbc.initClient(Helper.get("flexibee.server"), Helper.get("flexibee.company"), Helper.get("flexibee.user"), Helper.get("flexibee.password"))

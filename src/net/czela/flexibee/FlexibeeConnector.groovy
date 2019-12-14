@@ -106,15 +106,21 @@ class FlexibeeConnector {
         connection.setDoOutput(true)
         connection.setDoInput(true)
         OutputStream os = connection.getOutputStream()
-        os.write(data.bytes)
-        os.flush()
-        os.close()
-        connection.connect()
-        Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))
+        try {
+            os.write(data.bytes)
+            os.flush()
+            os.close()
+            connection.connect()
+            Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))
 
-        // read the output from the server
-        def json = new JsonSlurper().parse(reader)
-        return json
+            // read the output from the server
+            def json = new JsonSlurper().parse(reader)
+            return json
+        } catch(Exception e) {
+            Reader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))
+            println "ErrorStream:" + reader.text
+            throw e;
+        }
     }
 
     def putJson(String evidence, def map) {
@@ -132,23 +138,28 @@ class FlexibeeConnector {
         connection.setAllowUserInteraction(false)
         connection.setDoOutput(true)
         connection.setDoInput(true)
-        OutputStream os = connection.getOutputStream()
-        os.write(data.bytes)
-        os.flush()
-        os.close()
-        connection.connect()
-        Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))
+        try {
+            OutputStream os = connection.getOutputStream()
+            os.write(data.bytes)
+            os.flush()
+            os.close()
+            connection.connect()
+            Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))
 
 
-
-        // read the output from the server
-        def json = new JsonSlurper().parse(reader)
-        return json
+            // read the output from the server
+            def json = new JsonSlurper().parse(reader)
+            return json
+        } catch(Exception e) {
+            Reader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))
+            println "ErrorStream:" + reader.text
+            throw e;
+        }
     }
 
     List listPrijateFaktury() {
         def params = [
-                'detail=custom:lastUpdate,kod,stavUhrK,datSplat,sumCelkem,varSym,firma,popis,primUcet,protiUcet,stredisko,zakazka,typDoklBan,pocetPriloh,bezPolozek,banSpojDod',
+                'detail=custom:lastUpdate,kod,typDokl,cisDosle,stavUhrK,datSplat,sumCelkem,varSym,firma,popis,primUcet,protiUcet,stredisko,cinnost,typDoklBan,pocetPriloh,bezPolozek,banSpojDod',
                 'limit=10000',
                 ]
         def json = getJson(EVIDENCE_FAKTURA_PRIJATA, null, params)
@@ -320,11 +331,11 @@ class FlexibeeConnector {
         return list
     }
 
-    def coalesce(def a, def b) {
+    static def coalesce(def a, def b) {
         a!=null?a:b
     }
 
-    String fmtMonth(def m) {
+    static String fmtMonth(def m) {
         String.format("%02d", m)
     }
 }

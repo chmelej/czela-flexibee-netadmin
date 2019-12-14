@@ -54,6 +54,8 @@ class NetadminConnector {
         if (dok.vs == null) { dok.vs = '-' }
         if (dok.komu == null) { dok.komu = 0 }
 
+        dok.obsah = dok.obsah.replaceAll('–','-');
+
         if (dok.id != null) {
             String updateColumns = dokladyColumns.grep({ it != 'id' }).collect({ "$it = ?" }).join(', ')
             sql.executeUpdate("UPDATE doklady SET ${updateColumns} where id = ?", [
@@ -93,6 +95,10 @@ class NetadminConnector {
         m = name =~ /^Z(\d+).20(\d+)$/
         if (m.matches()) {
             name = 'Z' + m[0][2] + m[0][1];
+        }
+        m = name =~ /^UCT(\d+).20(\d+)$/
+        if (m.matches()) {
+            name = 'U' + m[0][2] + m[0][1];
         }
 
         File dir = null
