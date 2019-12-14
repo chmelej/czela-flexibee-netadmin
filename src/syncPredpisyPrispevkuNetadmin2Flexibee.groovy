@@ -1,22 +1,8 @@
 import groovy.sql.Sql
 import net.czela.common.Helper
 import net.czela.flexibee.FlexibeeConnector
-import net.czela.netadmin.Doklad
-import net.czela.netadmin.NetadminConnector
 
-import java.math.RoundingMode
-
-import static net.czela.common.Helper.asDecimal
 import static net.czela.common.Helper.asLong
-import static net.czela.common.Helper.filterNumbersOnly
-import static net.czela.common.Helper.notEmpty
-import static net.czela.flexibee.FlexibeeConnector.asDate
-import static net.czela.flexibee.FlexibeeConnector.parseCisloUctu
-import static net.czela.netadmin.NetadminConnector.DOK_FAKTURA
-import static net.czela.netadmin.NetadminConnector.DOK_STAV_NEPRIRAZENY
-import static net.czela.netadmin.NetadminConnector.DOK_STAV_PROPLACENY
-import static net.czela.netadmin.NetadminConnector.DOK_UCTENKA
-import static net.czela.netadmin.NetadminConnector.DOK_UNKNOWN
 
 Sql sql = Helper.newSqlInstance("app.properties", this)
 
@@ -28,7 +14,7 @@ int prev=-1
 while(prev < cnt) {
     prev = cnt
     sql.eachRow("""SELECT d.id, d.datum_date, d.vs, d.obsah, d.cena, u.jmeno, u.prijmeni, u.adresa, u.mesto, u.psc, u.email
- FROM denik d join users u on u.vs = d.vs where d.md='315000' and d.d='684000' and datum_date >= '2019-01-01' and datum_date < '2019-02-01' and ifnull(doklad,'') = '' limit 1000""") { row ->
+ FROM denik d join users u on u.vs = d.vs where d.md='315000' and d.d='684000' and datum_date >= '2019-01-01' and ifnull(doklad,'') = '' limit 1000""") { row ->
         fbc.genPredpisClenskehoPrispevku(row.DATUM_DATE, asLong(row.VS as String), row.CENA, row.JMENO, row.PRIJMENI, row.ADRESA, row.MESTO, row.PSC, row.EMAIL)
         sql.executeUpdate("UPDATE denik set doklad = 'FLEXIBEE_SENT' where id = ?", [row.id])
         cnt++

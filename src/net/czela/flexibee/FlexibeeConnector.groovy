@@ -246,8 +246,8 @@ class FlexibeeConnector {
         def mesic = 1 + cal.get(Calendar.MONTH)
         def nextmesic = mesic + 1
         int nextrok = rok
-        if (mesic > 12) {
-            mesic = 1; nextrok++
+        if (nextmesic > 12) {
+            nextmesic = 1; nextrok++
         }
         def map = [
                 "typDokl": "code:FAKTURA",
