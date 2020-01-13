@@ -48,19 +48,44 @@ class NetadminConnector {
     }
 
     def updateDoklad(Doklad dok) {
-        if (dok.akce == null) { dok.akce = 0 }
-        if (dok.dodavatel == null) { dok.dodavatel = '-' }
-        if (dok.ucet == null) { dok.ucet = '-' }
-        if (dok.vs == null) { dok.vs = '-' }
-        if (dok.komu == null) { dok.komu = 0 }
+        List<String> dokladyColumns = ['datum', 'datum_splatnosti', 'cena', 'obsah',]
+        List<Object> dokladyValues = [ dateToString(dok.datum), dok.datumSplatnosti,  dok.cena, dok.obsah, ]
 
-        dok.obsah = dok.obsah.replaceAll('–','-');
+        if (dok.akce != null) {
+            dokladyColumns.add('akce')
+            dokladyValues.add(dok.akce)
+        }
+
+        if (dok.dodavatel != null) {
+            dokladyColumns.add('dodavatel')
+            dokladyValues.add(dok.dodavatel)
+        }
+
+        if (dok.ucet != null) {
+            dokladyColumns.add('ucet')
+            dokladyValues.add(dok.ucet)
+        }
+
+        if (dok.vs != null &&  dok.vs ==~ /^\d+$/) {
+            dokladyColumns.add('vs')
+            dokladyValues.add(dok.vs)
+        }
+
+        if (dok.komu != null && dok.komu > 0 ) {
+            dokladyColumns.add('komu')
+            dokladyValues.add(dok.komu)
+
+        }
+
+        if (dok.stav == 7) { // pouze stav proplaceno nas zajima
+            dokladyColumns.add('stav')
+            dokladyValues.add(dok.stav)
+        }
 
         if (dok.id != null) {
-            String updateColumns = dokladyColumns.grep({ it != 'id' }).collect({ "$it = ?" }).join(', ')
-            sql.executeUpdate("UPDATE doklady SET ${updateColumns} where id = ?", [
-                    dateToString(dok.datum), dok.datumSplatnosti, dok.akce, dok.dodavatel, dok.ucet, dok.vs,
-                    dok.cena, dok.komu, dok.stav, dok.obsah, dok.poznamka, dok.doctype, dok.id,])
+            String updateColumns = dokladyColumns.collect({ "$it = ?" }).join(', ')
+            dokladyValues.add(dok.id)
+            sql.executeUpdate("UPDATE doklady SET ${updateColumns} where id = ?", dokladyValues);
         }
     }
 
@@ -187,14 +212,18 @@ class NetadminConnector {
         return list
     }
 
-    def upsertAkce(Akce akce) {
+    def insertAkce(Akce akce) {
         if (akce.id == null) {
             akce.id = sql.firstRow(genNextval(),[Akce.tableName]).V as Long
         }
 
+        /*
         sql.executeUpdate(genUpsert(Akce.tableName, Akce.columns),
                 [ akce.id, akce.sekceId, akce.nazev, akce.stav, akce.obsah, akce.datumSchvaleni, akce.datumUkonceni, akce.userId, akce.cena, akce.schvaleno, akce.ukonceno, akce.smlouvanutna,
                   akce.sekceId, akce.nazev, akce.stav, akce.obsah, akce.datumSchvaleni, akce.datumUkonceni, akce.userId, akce.cena, akce.schvaleno, akce.ukonceno, akce.smlouvanutna])
+         */
+        sql.executeUpdate(genInsert(Akce.tableName, Akce.columns),
+                [ akce.id, akce.sekceId, akce.nazev, akce.stav, akce.obsah, akce.datumSchvaleni, akce.datumUkonceni, akce.userId, akce.cena, akce.schvaleno, akce.ukonceno, akce.smlouvanutna ])
     }
 
     def upsertSekce(Sekce s) {
@@ -205,10 +234,16 @@ class NetadminConnector {
     }
 
     static String genUpsert(def table, def columns, def idColumn = 'id') {
-        String insertColumns = columns.collect().join(', ')
+        String insertColumns = columns.collect({"`$it`"}).join(', ')
         String insertQMS = columns.collect({ "?" }).join(', ') // question marks
-        String updateQMS = columns.grep({ it != idColumn }).collect({ "$it = ?" }).join(', ') // question marks
+        String updateQMS = columns.grep({ it != idColumn }).collect({ "`$it` = ?" }).join(', ') // question marks
         return "INSERT INTO $table ($insertColumns) VALUES ($insertQMS) ON DUPLICATE KEY UPDATE $updateQMS".toString()
+    }
+
+    static String genInsert(def table, def columns, def idColumn = 'id') {
+        String insertColumns = columns.collect({"`$it`"}).join(', ')
+        String insertQMS = columns.collect({ "?" }).join(', ') // question marks
+        return "INSERT INTO $table ($insertColumns) VALUES ($insertQMS)";
     }
 
     static String genNextval() {

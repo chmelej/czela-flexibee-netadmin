@@ -62,13 +62,13 @@ sekceMap.each {String key, Sekce val ->
 }
 
 cinnosti.each {key, val ->
-    def a = akceMap.remove(key)
+    Akce a = akceMap.remove(key) as Akce
     if (a == null) {
         def m = val.kod =~ /AKCE:(\d+)/
         if (m.matches()) {
             Long id = Long.parseLong(m[0][1])
             def akce = new Akce(id: id, nazev: val.nazev);
-            nac.upsertAkce(akce);
+            nac.insertAkce(akce);
         } else {
             println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin")
         }

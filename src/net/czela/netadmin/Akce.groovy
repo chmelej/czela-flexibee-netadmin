@@ -1,7 +1,5 @@
 package net.czela.netadmin
 
-import static net.czela.netadmin.NetadminConnector.asDate
-
 class Akce {
     static final String[] columns = 'id,sekceid,nazev,stav,obsah,datum_schvaleni,datum_ukonceni,userid,cena,schvaleno,ukonceno,smlouvanutna'.split(',')
     static final tableName = 'akce'
