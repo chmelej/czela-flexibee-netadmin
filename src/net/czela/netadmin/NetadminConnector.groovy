@@ -48,6 +48,8 @@ class NetadminConnector {
     }
 
     def updateDoklad(Doklad dok) {
+        dok.obsah = dok.obsah.replaceAll('–', '-')
+
         List<String> dokladyColumns = ['datum', 'datum_splatnosti', 'cena', 'obsah',]
         List<Object> dokladyValues = [ dateToString(dok.datum), dok.datumSplatnosti,  dok.cena, dok.obsah, ]
 

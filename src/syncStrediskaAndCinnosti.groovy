@@ -39,6 +39,11 @@ nac.selectAkceByYear(2019).each { Akce akce ->
     akceMap.put(key, akce)
 }
 
+nac.selectAkceByYear(2020).each { Akce akce ->
+    String key = akceIdToKod(akce.id)
+    akceMap.put(key, akce)
+}
+
 // porovnam a srovnam
 strediska.each {key, val ->
     def s = sekceMap.remove(key)
@@ -68,7 +73,11 @@ cinnosti.each {key, val ->
         if (m.matches()) {
             Long id = Long.parseLong(m[0][1])
             def akce = new Akce(id: id, nazev: val.nazev);
-            nac.insertAkce(akce);
+            try {
+                nac.insertAkce(akce);
+            } catch (Exception e) {
+                println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin akce.id = $id :"+e.getMessage())
+            }
         } else {
             println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin")
         }

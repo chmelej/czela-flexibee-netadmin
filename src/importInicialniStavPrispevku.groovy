@@ -8,7 +8,7 @@ import static net.czela.flexibee.FlexibeeConnector.*
 def genNedoplatekClenskehoPrispevku(def fbc, Long vs, BigDecimal cena, String jmeno, String prijmeni, String adresa, String mesto, String psc) {
     def map = [
             "typDokl"   : "code:FAKTURA",
-            "popis"     : "$jmeno $prijmeni - Nedoplatek2 členských příspěvků evidovany k 31.12.2018",
+            "popis"     : "$jmeno $prijmeni - Nedoplatek členských příspěvků evidovany k 31.12.2018 bulk002",
             "datVyst"   : "2018-12-01+01:00",
             "datSplat"  : "2018-12-01+01:00",
             "nazFirmy"  : "$jmeno $prijmeni",
@@ -27,7 +27,7 @@ def genNedoplatekClenskehoPrispevku(def fbc, Long vs, BigDecimal cena, String jm
     fbc.postJson(EVIDENCE_FAKTURA_VYDANA, map)
 }
 
-Sql sql = Helper.newSqlInstance("app-test.properties", this)
+Sql sql = Helper.newSqlInstance("app.properties", this)
 def fbc = new FlexibeeConnector()
 fbc.initClient(Helper.get("flexibee.server"), Helper.get("flexibee.company"), Helper.get("flexibee.user"), Helper.get("flexibee.password"))
 
@@ -36,7 +36,7 @@ String query = """SELECT d.*, u.jmeno, u.prijmeni, u.adresa, u.mesto, u.psc, u.e
         SELECT vs, sum(cena) as cena FROM denik where md = '315000' and d not in ('961000','962000') and datum_date < '2019-01-01' and vs > 999 and vs < 99999 GROUP by vs
         union all
         SELECT vs, - sum(cena) as cena FROM denik where d = '315000' and md not in ('961000','962000') and datum_date < '2019-01-01' and vs > 999 and vs < 99999 GROUP by vs
-    ) s group by vs ) d join users u on u.vs = d.vs where d.dluh > 0 limit 1"""
+    ) s group by vs ) d join users u on u.vs = d.vs where d.dluh > 0"""
 
 int cnt = 0;
 sql.eachRow(query) { row ->
