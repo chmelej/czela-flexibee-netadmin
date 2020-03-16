@@ -66,9 +66,12 @@ sekceMap.each {String key, Sekce val ->
     }
 }
 
+// TODO osetrit lepe!
+// tyhle akce jsou strasne stary uz je nenacitam takze je ani nechci vkladat
+def akceBlackList = [ 'AKCE:1771', 'AKCE:1783', 'AKCE:2064', 'AKCE:2098', 'AKCE:2115', 'AKCE:2150', 'AKCE:2171',]
 cinnosti.each {key, val ->
     Akce a = akceMap.remove(key) as Akce
-    if (a == null) {
+    if (a == null && ! akceBlackList.contains(val.kod)) {
         def m = val.kod =~ /AKCE:(\d+)/
         if (m.matches()) {
             Long id = Long.parseLong(m[0][1])
