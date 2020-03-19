@@ -78,7 +78,7 @@ faktury.each() { faktura ->
         def sumCelkem = asDecimal(faktura['sumCelkem'])
         sumCelkem = sumCelkem.setScale(2, RoundingMode.HALF_UP)
         totalCena = totalCena.setScale(2, RoundingMode.HALF_UP)
-        if (totalCena.compareTo(sumCelkem) != 0) {
+        if (Math.abs(totalCena.compareTo(sumCelkem)) > 1.0 && totalCena != 0) {
             println("WARN: Prijata faktura $kodFak celkova suma $sumCelkem neodpovida sume jednotlivých položek $totalCena")
             polozkyFaktury = null
         }
