@@ -112,8 +112,7 @@ class FlexibeeConnector {
         connection.connect()
 
         // read the output from the server
-        ByteArrayInputStream is = new ByteArrayInputStream(connection.getInputStream())
-        return is.bytes
+        return connection.getInputStream().getBytes()
     }
 
     def postJson(String evidence, def map) {
