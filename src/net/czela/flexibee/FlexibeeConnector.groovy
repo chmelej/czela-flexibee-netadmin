@@ -90,6 +90,32 @@ class FlexibeeConnector {
         return json
     }
 
+    def getBytes(def evidence, def detail, def params = []) {
+        def link
+        params.add('auth=http')
+        String encodedParams = params.collect({
+            def m = it =~ /(.+=)(.+)/
+            m[0][1]+urlEncode(m[0][2])
+        }).join('&')
+        if (detail) {
+            link = "${host}/c/${company}/${evidence}/${detail}/content?$encodedParams"
+        } else {
+            assert false
+        }
+        URL apiUrl = new URL(link)
+
+        HttpsURLConnection connection = (HttpsURLConnection) apiUrl.openConnection()
+        connection.setRequestMethod("GET")
+        connection.setDoOutput(true)
+        connection.setRequestProperty("Authorization", "Basic " + encodedAuth)
+        connection.setHostnameVerifier(new AnyHostVerifier())
+        connection.connect()
+
+        // read the output from the server
+        ByteArrayInputStream is = new ByteArrayInputStream(connection.getInputStream())
+        return is.bytes
+    }
+
     def postJson(String evidence, def map) {
         def link = "${host}/c/${company}/${evidence}.json"
         String data = JsonOutput.toJson([ "winstrom": ["$evidence": map ] ])
@@ -211,13 +237,14 @@ class FlexibeeConnector {
         return map
     }
 
+    /**
+     * pokud je priloha velika (26MB) tak stahovani pres json pada :-/
+     * @param id
+     * @return
+     */
     byte[] getPriloha(def id) {
         if (id != null) {
-            def json = getJson(EVIDENCE_PRILOHA, id )
-            String base64 = json[WINSTROM][EVIDENCE_PRILOHA]['content']
-            if (base64 != null) {
-                return Base64.decoder.decode(base64.substring(1,base64.length()-1))
-            }
+            return getBytes(EVIDENCE_PRILOHA, id )
         }
         return null
     }
