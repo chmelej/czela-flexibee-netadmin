@@ -127,8 +127,7 @@ class NetadminConnector {
         if (m.matches()) {
             name = 'U' + m[0][2] + m[0][1];
         }
-
-        m = name =~ /^SML(\d+).20(\d+)$/
+        m = name =~ /^SML(\d+)\/20(\d+)$/
         if (m.matches()) {
             name = 'M' + m[0][2] + m[0][1];
         }
