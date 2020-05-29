@@ -268,9 +268,14 @@ class FlexibeeConnector {
 
     static def parseCisloUctu(String banSpojDod) {
         if (notEmpty(banSpojDod)) {
-            def m = banSpojDod =~ /(\d+\/\d+)/
+            def m = banSpojDod =~ /(\d+\-\d+\/\d+)/
             if (m.find()) {
                 return m[0][1]
+            } else {
+                m = banSpojDod =~ /(\d+\/\d+)/
+                if (m.find()) {
+                    return m[0][1]
+                }
             }
         }
         return null
