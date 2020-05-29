@@ -128,6 +128,11 @@ class NetadminConnector {
             name = 'U' + m[0][2] + m[0][1];
         }
 
+        m = name =~ /^SML(\d+).20(\d+)$/
+        if (m.matches()) {
+            name = 'M' + m[0][2] + m[0][1];
+        }
+
         File dir = null
         [dokladBaseDir, name.substring(0,3), name.substring(3,5)].each { dirName->
             dir = dir == null?new File(dirName):new File(dir, dirName)
