@@ -79,7 +79,7 @@ faktury.each() { faktura ->
         sumCelkem = sumCelkem.setScale(2, RoundingMode.HALF_UP)
         totalCena = totalCena.setScale(2, RoundingMode.HALF_UP)
         if (Math.abs(totalCena - sumCelkem) > 1.0 && totalCena != 0) {
-            println("WARN: Prijata faktura $kodFak celkova suma $sumCelkem neodpovida sume jednotlivých položek $totalCena")
+            // takovych tam je mraky a podle ucetniho je to ok println("WARN: Prijata faktura $kodFak celkova suma $sumCelkem neodpovida sume jednotlivých položek $totalCena")
             polozkyFaktury = null
         }
     }
@@ -91,9 +91,6 @@ faktury.each() { faktura ->
                 'cenaMj': faktura['sumCelkem'],
                 'mnozMj': 1,
                 'nazev': faktura['popis'],
-                //"doklFak": "code:PF0004/2019",
-                //"lastUpdate":  "2019-11-27T20:33:44.295+01:00",
-                //"stredisko": "code:SEKCE:14",
         ])
     }
 
@@ -134,21 +131,6 @@ faktury.each() { faktura ->
             } else {
                 println("Doklad $dok.id je v pořádku a můžeme ho přeskočit.")
             }
-/*
-            def changeFaktura = [:]
-            if (netadminDoklad.getAkce() != dok.getAkce()) {
-                changeFaktura.put[:]
-            }
-            if (netadminDoklad.getAkce() != dok.getAkce()) {
-                changeFaktura.put[:]
-            }
-
-            if (changeFaktura.size() > 0) {
-                changeFaktura.put('kof')
-                fbc.postPrijateFaktury(changeFaktura)
-            }
-
- */
         }
     } catch(Exception e) {
         println(dok)
@@ -158,48 +140,37 @@ faktury.each() { faktura ->
 
 Doklad convertFaktura2Doklad(def faktura, def polozky, def prilohy) {
     def dok = new Doklad(
-    id: faktura['kod'],
-    datum: asDate(faktura['lastUpdate']),
-    datumSplatnosti: asDate(faktura['datSplat']),
-    //akce: faktura[''],
-    dodavatel: faktura['firma'],
-    ucet: parseCisloUctu(faktura['banSpojDod@showAs']),
-    vs: asLong(filterNumbersOnly(faktura['varSym'])),
-    cena: asDecimal(faktura['sumCelkem']),
-    //komu: faktura[''],
-    stav: notEmpty(faktura['stavUhrK'])? DOK_STAV_PROPLACENY: DOK_STAV_NEPRIRAZENY,
-    obsah: faktura['popis'],
-    poznamka: 'import z Abra.Flexibee',
-    //doctype: faktura[''],
+            id: faktura['kod'],
+            datum: asDate(faktura['lastUpdate']),
+            datumSplatnosti: asDate(faktura['datSplat']),
+            dodavatel: faktura['firma'],
+            ucet: parseCisloUctu(faktura['banSpojDod@showAs']),
+            vs: asLong(filterNumbersOnly(faktura['varSym'])),
+            cena: asDecimal(faktura['sumCelkem']),
+            stav: notEmpty(faktura['stavUhrK'])? DOK_STAV_PROPLACENY: DOK_STAV_NEPRIRAZENY,
+            obsah: faktura['popis'],
+            poznamka: 'import z Abra.Flexibee',
     )
 
     dok.doctype = dok.id.startsWith("PF")?DOK_FAKTURA:dok.id.startsWith("ÚČT")?DOK_UCTENKA:DOK_UNKNOWN
 
     if (listNotEmpty(polozky)) {
         polozky.each { polozka ->
-            // id dokladid cena vs obsah umisteniid souvztaznostid
             Integer id
             String dokladId = dok.id
             BigDecimal cena
             Integer vs
             obsah = polozka['nazev']
-            //Integer umisteniId
-            //Integer souvztaznostId
-            // ,lastUpdate,,cenaMj,dphDalUcet,dphMdUcet,mnozMj,objem,stredisko',
-
         }
-        // TODO } else { // kazdy doklad musi mit alepon jednu polozku - takze kdyz tam neni tak si ji vygenerujeme
     }
 
     return dok
-
-    // primUcet,protiUcet,stredisko,zakazka,typDoklBan,pocetPriloh,bezPolozek',
 }
 
-def listNotEmpty(List l) {
+static def listNotEmpty(List l) {
     return  l != null && l.size() > 0
 }
 
-def listEmpty(List l) {
+static def listEmpty(List l) {
     return  l == null || l.size() == 0
 }

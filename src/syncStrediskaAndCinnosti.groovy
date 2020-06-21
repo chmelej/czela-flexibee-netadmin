@@ -82,7 +82,8 @@ cinnosti.each {key, val ->
                 println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin akce.id = $id :"+e.getMessage())
             }
         } else {
-            println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin")
+            if (val.kod != 'KI' && val.kod != 'RADA') // o techto chybach vim a nic stim neudelam
+                println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin")
         }
     }
 }
