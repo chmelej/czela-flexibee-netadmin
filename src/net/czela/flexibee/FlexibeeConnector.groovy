@@ -185,7 +185,7 @@ class FlexibeeConnector {
     List listPrijateFaktury() {
         def params = [
                 'detail=custom:lastUpdate,kod,typDokl,cisDosle,stavUhrK,datSplat,sumCelkem,varSym,firma,popis,primUcet,protiUcet,stredisko,cinnost,typDoklBan,pocetPriloh,bezPolozek,banSpojDod',
-                'limit=10000',
+                'limit=100',
                 ]
         def json = getJson(EVIDENCE_FAKTURA_PRIJATA, null, params)
 

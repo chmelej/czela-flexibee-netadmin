@@ -54,7 +54,8 @@ strediska.each {key, val ->
             def sekce = new Sekce(id: id, nazev: val.nazev, group:'AF');
             nac.upsertSekce(sekce);
         } else {
-            println("WARN: stredisko '${val.kod}' nelze vlozit do Netadmin")
+            if (val.kod != 'KI' && val.kod != 'RADA') // o techto chybach vim a nic stim neudelam
+                println("WARN: stredisko '${val.kod}' nelze vlozit do Netadmin")
         }
     }
 }
@@ -82,8 +83,7 @@ cinnosti.each {key, val ->
                 println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin akce.id = $id :"+e.getMessage())
             }
         } else {
-            if (val.kod != 'KI' && val.kod != 'RADA') // o techto chybach vim a nic stim neudelam
-                println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin")
+            println("WARN: cinnosti '${val.kod}' nelze vlozit do Netadmin")
         }
     }
 }
