@@ -107,6 +107,18 @@ class NetadminConnector {
         sql.executeUpdate("INSERT INTO doklady (${insertColumns}) VALUES (${insertQMS})".toString(), [
                 dateToString(dok.datum), dok.datumSplatnosti, dok.akce, dok.dodavatel, dok.ucet, dok.vs,
                 dok.cena, dok.komu, dok.stav, dok.obsah, dok.poznamka, dok.doctype, dok.id,])
+        // Default ACL
+        def actions = [1,2,4,6] // view, edit, delete, manage_acl
+        def owners = [2,1696] // users, asistentka
+        def ownerType = 2 // role
+        long fakeId = fakeDokladId(dok.id)
+        sql.executeUpdate("INSERT INTO acl_objects (obj_type, obj_id, name) VALUES (?,?,?)", ['doklady', fakeId, dok.id])
+        long aclId = sql.firstRow("SELECT LAST_INSERT_ID() V").V
+        owners.each { owner ->
+            actions.each { action ->
+                sql.executeUpdate("INSERT INTO ACL_MAP (owner_id,owner_type,action_id,object_id) VALUES (?,?,?,?)", [owner, ownerType, action, aclId])
+            }
+        }
     }
 
     def storeDokladOnFS(String name, byte[] data, boolean forceOverwrite = false) {
@@ -144,6 +156,26 @@ class NetadminConnector {
         if (!file.exists()) {
             file << data
         }
+    }
+
+    long fakeDokladId(String docId) {
+        def m = docId =~ /^([A-Z]+)([0-9]+)\/20([0-9]+)$/
+        assert m.matches()
+        String prefix = m[0][1]
+        String cnt = m[0][2]
+        String year = m[0][3]
+        String numPrefix
+        switch (prefix) {
+            case 'S': numPrefix = '999' ; break;
+            case 'P': numPrefix = '998' ; break;
+            case 'PF': numPrefix = '997' ; break;
+            case 'UCT': numPrefix = '996' ; break;
+            case 'Z': numPrefix = '995' ; break;
+            case 'SML': numPrefix = '994' ; break;
+            default:
+                assert false // unknown prefix
+        }
+        return Long.parseLong("$numPrefix$year$cnt")
     }
 
     List<Doklad> selectDokladyByIds(List<String> ids) {
