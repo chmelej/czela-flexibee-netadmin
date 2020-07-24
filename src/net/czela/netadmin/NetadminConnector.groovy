@@ -160,6 +160,9 @@ class NetadminConnector {
 
     long fakeDokladId(String docId) {
         def m = docId =~ /^([A-Z]+)([0-9]+)\/20([0-9]+)$/
+        if (! m.matches()) {
+            m = docId =~ /^([A-Z]+)([0-9]+)\/(20)$/
+        }
         assert m.matches()
         String prefix = m[0][1]
         String cnt = m[0][2]
