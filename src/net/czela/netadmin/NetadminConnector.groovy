@@ -116,7 +116,7 @@ class NetadminConnector {
         long aclId = sql.firstRow("SELECT LAST_INSERT_ID() V").V
         owners.each { owner ->
             actions.each { action ->
-                sql.executeUpdate("INSERT INTO ACL_MAP (owner_id,owner_type,action_id,object_id) VALUES (?,?,?,?)", [owner, ownerType, action, aclId])
+                sql.executeUpdate("INSERT INTO acl_map (owner_id,owner_type,action_id,object_id) VALUES (?,?,?,?)", [owner, ownerType, action, aclId])
             }
         }
     }
