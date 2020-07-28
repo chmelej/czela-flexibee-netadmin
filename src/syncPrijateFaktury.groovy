@@ -139,12 +139,21 @@ faktury.each() { faktura ->
 }
 
 Doklad convertFaktura2Doklad(def faktura, def polozky, def prilohy) {
+    String buc = faktura['buc']
+    String smerKod = faktura['smerKod@showAs']
+    String platbaNaUcet
+    if (buc != null && smerKod != null && buc.length() > 0 && smerKod.length() > 1) {
+        platbaNaUcet = "$buc/$smerKod"
+    } else {
+        platbaNaUcet = parseCisloUctu(faktura['banSpojDod@showAs'])
+    }
+
     def dok = new Doklad(
             id: faktura['kod'],
             datum: asDate(faktura['lastUpdate']),
             datumSplatnosti: asDate(faktura['datSplat']),
             dodavatel: faktura['firma'],
-            ucet: parseCisloUctu(faktura['banSpojDod@showAs']),
+            ucet: platbaNaUcet,
             vs: asLong(filterNumbersOnly(faktura['varSym'])),
             cena: asDecimal(faktura['sumCelkem']),
             stav: notEmpty(faktura['stavUhrK'])? DOK_STAV_PROPLACENY: DOK_STAV_NEPRIRAZENY,
