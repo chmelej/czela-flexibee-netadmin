@@ -10,9 +10,9 @@ fbc.initClient(Helper.get("flexibee.server"), Helper.get("flexibee.company"), He
 
 
 def doklady = [:]
-sql.eachRow("""SELECT d.id, concat('code:AKCE:',d.akce) as cinnost, concat('code:SEKCE:',a.sekceid) as stredisko FROM doklady d
-join akce a on d.akce = a.id
-where d.stav in(2,4,6)""".toString()) { row ->
+sql.eachRow("""SELECT d.id, concat('code:AKCE:',d.akce) as cinnost, concat('code:SEKCE:',a.sekceid) as stredisko, d.stav 
+FROM doklady d
+JOIN akce a ON d.akce = a.id AND d.datum_splatnosti > '2020-01-01' AND d.stav > 1 """.toString()) { row ->
     Map map = [
             'kod': row.ID,
             'stredisko': row.stredisko,
@@ -29,18 +29,25 @@ faktury.each { Map faktura ->
     Map changes = [:];
     if (doklad != null) {
         ['cinnost', 'stredisko'].each { key ->
-            if (! faktura[key]) {
-                changes.put(key, doklad.get(key))
+            String valF = faktura[key]
+            String valD = doklad.get(key)
+            if (valD != null && (valF == null ||  valD != valF)) {
+                changes.put(key, valD)
             }
         }
         if (changes.size() > 0) {
-            ['id','typDokl'].each { key -> // kopiruj nezbytne parametry
-                if (faktura.get(key)) {
-                    changes.put(key, faktura.get(key))
+            try {
+                ['id', 'typDokl'].each { key -> // kopiruj nezbytne parametry
+                    if (faktura.get(key)) {
+                        changes.put(key, faktura.get(key))
+                    }
                 }
-            }
 
-            fbc.putJson(EVIDENCE_FAKTURA_PRIJATA, changes);
+                fbc.putJson(EVIDENCE_FAKTURA_PRIJATA, changes);
+                println "update ${faktura.get('id')} ... OK"
+            } catch(Exception e) {
+                println "update ${faktura.get('id')} ... "+e.getMessage()
+            }
         }
     }
 }

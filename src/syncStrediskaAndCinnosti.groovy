@@ -34,11 +34,6 @@ nac.selectSekce().each { Sekce sekce ->
     sekceMap.put(key, sekce)
 }
 
-nac.selectAkceByYear(2019).each { Akce akce ->
-    String key = akceIdToKod(akce.id)
-    akceMap.put(key, akce)
-}
-
 nac.selectAkceByYear(2020).each { Akce akce ->
     String key = akceIdToKod(akce.id)
     akceMap.put(key, akce)

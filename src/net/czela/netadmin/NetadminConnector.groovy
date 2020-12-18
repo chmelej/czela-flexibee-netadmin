@@ -225,7 +225,8 @@ class NetadminConnector {
 
     def selectAkceByYear(int year) {
         def list = []
-        sql.eachRow("SELECT * FROM akce WHERE datum_schvaleni LIKE ?", ["%${year}".toString()]) { row ->
+        sql.eachRow("""SELECT DISTINCT a.* FROM doklady d
+                JOIN akce a ON d.akce = a.id AND d.datum_splatnosti > '${year}-01-01'""".toString()) { row ->
             list.add(new Akce(
                     id: row.id,
                     sekceId: row.sekceid,

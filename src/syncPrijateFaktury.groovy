@@ -18,6 +18,9 @@ import static net.czela.netadmin.NetadminConnector.DOK_STAV_PROPLACENY
 import static net.czela.netadmin.NetadminConnector.DOK_UCTENKA
 import static net.czela.netadmin.NetadminConnector.DOK_UNKNOWN
 
+/**
+ * Skript kopiruje data z AF do netadmin. konkretne prijate faktury uklada jako doklady v netadminu
+ */
 Sql sql = Helper.newSqlInstance("app.properties", this)
 
 def fbc = new FlexibeeConnector()
