@@ -157,7 +157,7 @@ Doklad convertFaktura2Doklad(def faktura, def polozky, def prilohy) {
             datumSplatnosti: asDate(faktura['datSplat']),
             dodavatel: faktura['firma'],
             ucet: platbaNaUcet,
-            vs: asLong(filterNumbersOnly(faktura['varSym'])),
+            vs: asLong(validateVS(filterNumbersOnly(faktura['varSym']))),
             cena: asDecimal(faktura['sumCelkem']),
             stav: notEmpty(faktura['stavUhrK'])? DOK_STAV_PROPLACENY: DOK_STAV_NEPRIRAZENY,
             obsah: faktura['popis'],
@@ -185,4 +185,8 @@ static def listNotEmpty(List l) {
 
 static def listEmpty(List l) {
     return  l == null || l.size() == 0
+}
+
+static def validateVS(def vs) {
+    return (vs != null && vs.toString().length() > 10)?null:vs
 }
