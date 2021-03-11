@@ -242,6 +242,28 @@ class NetadminConnector {
         return list
     }
 
+    def selectAllMembers() {
+        def list = []
+        sql.eachRow("""SELECT * FROM users where id in (
+            SELECT obj_id FROM workflow_logs 
+            WHERE wf_name='users' AND from_date < now() AND to_date > now() and status = 2 )""") { row -> // and obj_id in (1224,1225)
+            list.add(new User(
+                    id: row.id,
+                    vs: row.vs,
+                    jmeno: row.jmeno?.trim(),
+                    prijmeni: row.prijmeni?.trim(),
+                    login: row.login?.trim(),
+                    mesto: row.mesto?.trim(),
+                    adresa: row.adresa?.trim(),
+                    psc: row.psc?.trim(),
+                    mobil: row.mobil?.trim(),
+                    telefon: row.telefon?.trim(),
+                    email: row.email?.trim(),
+            ))
+        }
+        return list
+    }
+
     def selectSekce() {
         def list = []
         sql.eachRow("SELECT * FROM sekce") { row ->

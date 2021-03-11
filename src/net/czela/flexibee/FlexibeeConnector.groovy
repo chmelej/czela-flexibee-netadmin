@@ -49,6 +49,7 @@ class FlexibeeConnector {
     public static final String EVIDENCE_PRILOHA = 'priloha'
     public static final String EVIDENCE_CINNOST = 'cinnost'
     public static final String EVIDENCE_STREDISKO = 'stredisko'
+    public static final String EVIDENCE_ADRESAR = 'adresar'
 
     def initClient(def host, def company, def username, def password) {
         this.host = host
@@ -71,26 +72,33 @@ class FlexibeeConnector {
             m[0][1]+urlEncode(m[0][2])
         }).join('&')
         if (detail) {
-            link = "${host}/c/${company}/${evidence}/${detail}.json?$encodedParams"
+            def encodedDetail = urlEncode(detail)
+            link = "${host}/c/${company}/${evidence}/${encodedDetail}.json?$encodedParams"
         } else {
             link = "${host}/c/${company}/${evidence}.json?$encodedParams"
         }
         URL apiUrl = new URL(link)
-
         HttpsURLConnection connection = (HttpsURLConnection) apiUrl.openConnection()
-        connection.setRequestMethod("GET")
-        connection.setDoOutput(true)
-        connection.setRequestProperty("Authorization", "Basic " + encodedAuth)
-        connection.setHostnameVerifier(new AnyHostVerifier())
-        connection.connect()
 
-        // read the output from the server
-        Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))
-        def json = new JsonSlurper().parse(reader)
-        return json
-    }
+        try {
+            connection.setRequestMethod("GET")
+            connection.setDoOutput(true)
+            connection.setRequestProperty("Authorization", "Basic " + encodedAuth)
+            connection.setHostnameVerifier(new AnyHostVerifier())
+            connection.connect()
 
-    def getBytes(def evidence, def detail, def params = []) {
+            // read the output from the server
+            Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))
+            def json = new JsonSlurper().parse(reader)
+            return json
+        } catch(Exception e) {
+            Reader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()))
+            println "ErrorStream:" + reader.text
+            throw e;
+        }
+}
+
+def getBytes(def evidence, def detail, def params = []) {
         def link
         params.add('auth=http')
         String encodedParams = params.collect({
@@ -297,6 +305,7 @@ class FlexibeeConnector {
                 "datVyst":	"${rok}-${fmtMonth(mesic)}-01+01:00",
                 "datSplat": "${nextrok}-${fmtMonth(nextmesic)}-15+01:00",
                 "nazFirmy": "$jmeno $prijmeni",
+                "firma": "code:$vs",
                 "ulice": coalesce(adresa,'-'),
                 "mesto": coalesce(mesto,'-'),
                 "psc": coalesce(psc,""),
@@ -322,6 +331,14 @@ class FlexibeeConnector {
          */
     }
 
+    def postAdresar(Map adresar) {
+        assert adresar['kod'] != null;
+        assert adresar['nazev'] != null;
+
+        def json = postJson(EVIDENCE_ADRESAR, adresar)
+    }
+
+
     def postCinnost(def kod, def nazev) {
         assert kod != null;
         assert nazev != null;
@@ -334,6 +351,19 @@ class FlexibeeConnector {
         assert nazev != null;
 
         def json = postJson(EVIDENCE_STREDISKO, ['kod':kod, 'nazev': nazev])
+    }
+
+    def listAdresarCleni() {
+        def params = [
+                'detail=custom:kod,nazev,nazev2,mesto,ulice,psc,tel,mobil',
+                'limit=10000',
+        ]
+        def json = getJson(EVIDENCE_ADRESAR, "(skupFir='code:ČLEN')", params)
+
+        def list = []
+        json[WINSTROM][EVIDENCE_ADRESAR].each { it -> list.add(it) }
+
+        return list
     }
 
     def listCinnosti() {
