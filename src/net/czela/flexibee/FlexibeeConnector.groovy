@@ -50,6 +50,7 @@ class FlexibeeConnector {
     public static final String EVIDENCE_CINNOST = 'cinnost'
     public static final String EVIDENCE_STREDISKO = 'stredisko'
     public static final String EVIDENCE_ADRESAR = 'adresar'
+    public static final String EVIDENCE_VAZEBNI_DOKLAD = 'vazebni-doklad'
 
     def initClient(def host, def company, def username, def password) {
         this.host = host
@@ -398,6 +399,16 @@ def getBytes(def evidence, def detail, def params = []) {
 
     static String fmtMonth(def m) {
         String.format("%02d", m)
+    }
+
+    def listVazebniDoklady(String masterEvidence, String kod) {
+        def ekod = urlEncode(kod)
+        def evidence = "$masterEvidence/code:$ekod/vazebni-doklady"
+        def json = getJson(evidence)
+        def list = []
+        json[WINSTROM][EVIDENCE_VAZEBNI_DOKLAD].each { it -> list.add(it) }
+
+        return list
     }
 }
 
