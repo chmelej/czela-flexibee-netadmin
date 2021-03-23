@@ -17,6 +17,7 @@ def nac = new NetadminConnector(sql)
 nac.dokladBaseDir = Helper.get("netadmin.doklady.dir","/tmp/doklady/")
 
 sql.eachRow("SELECT id FROM doklady where akce = 0 and id not rlike '^S[0-9]+\$'  order by STR_TO_DATE(datum ,'%d.%m.%Y') desc".toString()) { row ->
+    boolean success = false
     def id = row.ID as String
     def json = fbc.listVazebniDoklady(FlexibeeConnector.EVIDENCE_FAKTURA_PRIJATA, id)
     def relatedIds = []
@@ -37,6 +38,10 @@ sql.eachRow("SELECT id FROM doklady where akce = 0 and id not rlike '^S[0-9]+\$'
             Long akceId = relatedAkce[0] as Long
             println("Nasel jsem akci ${akceId} k dokladu $id")
             sql.executeUpdate("UPDATE doklady SET akce = ? WHERE id = ?".toString(), [akceId, id])
+            success = true
         }
+    }
+    if (!success) {
+        println("nepodarilo se najit vazbu pro doklad $id")
     }
 }

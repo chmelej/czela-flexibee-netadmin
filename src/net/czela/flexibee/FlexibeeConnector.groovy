@@ -290,27 +290,15 @@ def getBytes(def evidence, def detail, def params = []) {
         return null
     }
 
-    def genPredpisClenskehoPrispevku(Date datum, Long vs, BigDecimal cena, String jmeno, String prijmeni, String adresa, String mesto, String psc, String email) {
-        def cal = new GregorianCalendar()
-        cal.setTime(datum)
-        int rok = cal.get(Calendar.YEAR)
-        def mesic = 1 + cal.get(Calendar.MONTH)
-        def nextmesic = mesic + 1
-        int nextrok = rok
-        if (nextmesic > 12) {
-            nextmesic = 1; nextrok++
-        }
+    String genPredpisClenskehoPrispevku(int vs, BigDecimal cena, String popisek, Date datumVystaveni, Date datumSplatnosti) {
+        assert cena != null && cena.doubleValue() > 0
+        def fmt = new SimpleDateFormat("yyyy-MM-dd")
         def map = [
                 "typDokl": "code:FAKTURA",
-                "popis": "$jmeno $prijmeni - předpis členského příspěvku za $rok/${fmtMonth(mesic)}",
-                "datVyst":	"${rok}-${fmtMonth(mesic)}-01+01:00",
-                "datSplat": "${nextrok}-${fmtMonth(nextmesic)}-15+01:00",
-                "nazFirmy": "$jmeno $prijmeni",
+                "popis": popisek,
+                "datVyst":	fmt.format(datumVystaveni),
+                "datSplat": fmt.format(datumSplatnosti),
                 "firma": "code:$vs",
-                "ulice": coalesce(adresa,'-'),
-                "mesto": coalesce(mesto,'-'),
-                "psc": coalesce(psc,""),
-                "stat": "code:CZ",
                 "bezPolozek": "true",
                 "clenDph": "code:000U",
                 "varSym": "$vs",
@@ -320,16 +308,12 @@ def getBytes(def evidence, def detail, def params = []) {
                 "primUcet":	"code:315000",
         ]
         def json = postJson(EVIDENCE_FAKTURA_VYDANA, map)
-        /**
-         * {"winstrom":{"@version":"1.0",
-         *      "success":"true",
-         *      "stats":{"created":"0","updated":"1","deleted":"0","skipped":"0","failed":"0"},
-         *      "results":[{"id":"714","request-id":"714","ref":"/c/czela_net_z_s_1/faktura-vydana/714.json"}]}}
-         * {"winstrom":{"@version":"1.0",
-         *      "success":"false",
-         *      "stats":{"created":"0","updated":"0","deleted":"0","skipped":"0","failed":"1"},
-         *      "results":[{"errors":[{"message":"Pole 'Interní číslo' musí být vyplněno. [DoklFak -1]","for":"kod","path":"faktura-vydana[temporary-id=null].kod","code":"INVALID"}]}]}}
-         */
+        assert json[WINSTROM]["success"] == "true"
+        def documentId = null
+        json[WINSTROM]["results"].each { result ->
+            documentId = result["id"]
+        }
+        return documentId
     }
 
     def postAdresar(Map adresar) {

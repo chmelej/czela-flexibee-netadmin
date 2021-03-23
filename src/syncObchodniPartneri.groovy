@@ -24,7 +24,7 @@ nac.dokladBaseDir = Helper.get("netadmin.doklady.dir","/tmp/doklady/")
 def adresar = toMap(fbc.listAdresarCleni(),'kod');
 
 Map<String, User> membersMap = [:]
-// nactu data z Netadmin
+// nactu data z Netadmin (vsechny lidi kteri kdy byli cleny od 1.1.2021 do ted)
 nac.selectAllMembers().each { User user ->
     String key = userToKod(user)
     membersMap.put(key, user)

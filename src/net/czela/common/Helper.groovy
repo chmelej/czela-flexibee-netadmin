@@ -47,7 +47,7 @@ class Helper {
         return v == null?defaultValue:v
     }
 
-    static def asLong(String longString) {
+    static Long asLong(String longString) {
         if (notEmpty(longString)) {
             return Long.parseLong(longString)
         }
