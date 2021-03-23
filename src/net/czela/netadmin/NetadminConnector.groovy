@@ -1,11 +1,6 @@
 package net.czela.netadmin
 
-//@Grapes(
-//        @Grab(group='org.mariadb.jdbc', module='mariadb-java-client', version='2.5.1')
-//)
-
 import groovy.sql.Sql
-import groovy.transform.builder.InitializerStrategy
 
 import java.text.SimpleDateFormat
 
@@ -226,7 +221,7 @@ class NetadminConnector {
     def selectAkceByYear(int year) {
         def list = []
         //sql.eachRow("""SELECT DISTINCT a.* FROM doklady d JOIN akce a ON d.akce = a.id AND d.datum_splatnosti > '${year}-01-01'""".toString()) { row ->
-	sql.eachRow("SELECT * FROM akce where STR_TO_DATE(datum_schvaleni ,'%d.%m.%Y') > STR_TO_DATE('01.01.${year}' ,'%d.%m.%Y')".toString()) { row ->
+        sql.eachRow("SELECT * FROM akce where STR_TO_DATE(datum_schvaleni ,'%d.%m.%Y') > STR_TO_DATE('01.01.${year}' ,'%d.%m.%Y')".toString()) { row ->
             list.add(new Akce(
                     id: row.id,
                     sekceId: row.sekceid,
@@ -237,6 +232,38 @@ class NetadminConnector {
                     datumUkonceni: asDate(row.datum_ukonceni),
                     userId: row.userid,
                     cena: asDecimal(row.cena)
+            ))
+        }
+        return list
+    }
+
+    def selectAllMembers() {
+        def list = []
+        String query = """SELECT * FROM users where id in (
+            SELECT obj_id FROM workflow_logs 
+            WHERE wf_name='users' and status = 2 AND (
+            \t(from_date >= '2021-01-01' AND from_date <= now()) OR
+            \t(to_date   >= '2021-01-01' AND to_date   <= now()) OR
+            \t(from_date <  '2021-01-01' AND to_date   >  now())
+            ))"""
+        /*
+        """SELECT * FROM users where id in (
+            SELECT obj_id FROM workflow_logs
+            WHERE wf_name='users' AND from_date < now() AND to_date > now() and status = 2 )"""
+         */
+        sql.eachRow(query) { row -> // and obj_id in (1224,1225)
+            list.add(new User(
+                    id: row.id,
+                    vs: row.vs,
+                    jmeno: row.jmeno?.trim(),
+                    prijmeni: row.prijmeni?.trim(),
+                    login: row.login?.trim(),
+                    mesto: row.mesto?.trim(),
+                    adresa: row.adresa?.trim(),
+                    psc: row.psc?.trim(),
+                    mobil: row.mobil?.trim(),
+                    telefon: row.telefon?.trim(),
+                    email: row.email?.trim(),
             ))
         }
         return list
