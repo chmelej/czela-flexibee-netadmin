@@ -4,5 +4,4 @@ data-xml/
 curl-tests/
 out/
 *.properties
-*.sh
-
+mkln.sh
