@@ -12,7 +12,7 @@ fbc.initClient(Helper.get("flexibee.server"), Helper.get("flexibee.company"), He
 def doklady = [:]
 sql.eachRow("""SELECT d.id, concat('code:AKCE:',d.akce) as cinnost, concat('code:SEKCE:',a.sekceid) as stredisko, d.stav 
 FROM doklady d
-JOIN akce a ON d.akce = a.id AND d.datum_splatnosti > '2020-01-01' AND d.stav > 1 AND d.cena > 0""".toString()) { row ->
+JOIN akce a ON d.akce = a.id AND d.datum_splatnosti > '2020-06-01' AND d.stav > 1 """.toString()) { row ->
     Map map = [
             'kod': row.ID,
             'stredisko': row.stredisko,
