@@ -18,7 +18,7 @@ while(prev < cnt) {
     prev = cnt
     sql.eachRow("SELECT id, vs, castka, popisek, datum_splatnosti FROM cleni_prispevky" +
             " WHERE datum_vystaveni_dokladu is null OR ucto_doklad_id is null LIMIT 1000") { row ->
-        def documentId = fbc.genPredpisClenskehoPrispevku( row.VS as int, row.CENA as BigDecimal, row.POPISEK as String, now, row.DATUM_SPLATNOSTI as Date)
+        def documentId = fbc.genPredpisClenskehoPrispevku( row.VS as int, row.CASTKA as BigDecimal, row.POPISEK as String, now, row.DATUM_SPLATNOSTI as Date)
         sql.executeUpdate("UPDATE cleni_prispevky SET ucto_doklad_id = ?, datum_vystaveni_dokladu = ? WHERE id = ?".toString(), [documentId, nowts, row.ID])
         cnt++
     }
