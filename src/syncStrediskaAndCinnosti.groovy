@@ -34,7 +34,7 @@ nac.selectSekce().each { Sekce sekce ->
     sekceMap.put(key, sekce)
 }
 
-nac.selectAkceByYear(2020).each { Akce akce ->
+nac.selectAllAkce().each { Akce akce ->
     String key = akceIdToKod(akce.id)
     akceMap.put(key, akce)
 }
@@ -84,9 +84,11 @@ cinnosti.each {key, val ->
 }
 
 akceMap.each {String key, Akce val ->
-    def s = cinnosti.remove(key)
-    if (s == null) {
-        fbc.postCinnost(akceIdToKod(val.id), val.nazev)
+    if (val.stav != 5 && val.datumSchvaleni ==~ /^.*202.$/) { // vkladam jen relativne nove a jen otevrene
+        def s = cinnosti.remove(key)
+        if (s == null) {
+            fbc.postCinnost(akceIdToKod(val.id), val.nazev)
+        }
     }
 }
 

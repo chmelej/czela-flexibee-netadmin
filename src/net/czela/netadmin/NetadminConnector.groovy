@@ -237,6 +237,24 @@ class NetadminConnector {
         return list
     }
 
+    def selectAllAkce() {
+        def list = []
+        sql.eachRow("SELECT * FROM akce".toString()) { row ->
+            list.add(new Akce(
+                    id: row.id,
+                    sekceId: row.sekceid,
+                    nazev: row.nazev,
+                    stav: row.stav,
+                    obsah: row.obsah,
+                    datumSchvaleni: asDate(row.datum_schvaleni),
+                    datumUkonceni: asDate(row.datum_ukonceni),
+                    userId: row.userid,
+                    cena: asDecimal(row.cena)
+            ))
+        }
+        return list
+    }
+
     def selectAllMembers() {
         def list = []
         String query = """SELECT * FROM users where id in (
